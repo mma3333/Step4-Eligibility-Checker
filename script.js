@@ -49,6 +49,10 @@ const schoolAgeQuestionsLevel1 = [
   "Is the educator at least 19 years old?"
 ];
 
+document.getElementById("ageGroup").addEventListener("change", () => {
+  handleChange(1);
+});
+
 function handleChange(step) {
   const levelValue = document.getElementById("level").value;
   const ageGroupSelect = document.getElementById("ageGroup");
