@@ -141,9 +141,9 @@ function evaluateResult() {
     const expectations = expectedAnswers[answers.level];
     const match = expectations.every((expected, i) => userResponses[i] === expected);
 
-    // Special case: Level 1 with 0–5 AND all match BUT Q1 = "No"
+    // ✅ Applies to both Entry Level and Level 1
     if (
-      answers.level === "level1" &&
+      (answers.level === "level1" || answers.level === "entry") &&
       match &&
       userResponses[0] === "No"
     ) {
