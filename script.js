@@ -44,26 +44,34 @@ const schoolAgeQuestions = [
 
 function handleChange(step) {
   const levelValue = document.getElementById("level").value;
-  const ageGroupValue = document.getElementById("ageGroup")?.value;
+  const ageGroupSelect = document.getElementById("ageGroup");
 
   if (step === 0) {
     answers.level = levelValue;
     answers.ageGroup = null;
     userResponses = {};
+    questionFlow = [];
     currentQuestionIndex = 0;
+
+    if (ageGroupSelect) {
+      ageGroupSelect.value = "";
+    }
+
     document.getElementById("group-q1").style.display = levelValue ? "block" : "none";
     dynamicQuestionsDiv.innerHTML = "";
     resultSection.style.display = "none";
+    resultTitle.innerText = "";
   }
 
   if (step === 1) {
-    answers.ageGroup = ageGroupValue;
+    answers.ageGroup = ageGroupSelect?.value;
     userResponses = {};
+    questionFlow = [];
     currentQuestionIndex = 0;
     dynamicQuestionsDiv.innerHTML = "";
     resultSection.style.display = "none";
 
-    questionFlow = (ageGroupValue === "school-age")
+    questionFlow = (answers.ageGroup === "school-age")
       ? schoolAgeQuestions
       : (answers.level === "entry" ? entryQuestions : level1Questions);
 
@@ -135,11 +143,17 @@ function evaluateResult() {
     }
   } else {
     const expectations = expectedAnswers[answers.level];
-    const firstAnswer = userResponses[0];
-    const restMatch = expectations.slice(1).every((expected, i) => userResponses[i + 1] === expected);
     const allMatch = expectations.every((expected, i) => userResponses[i] === expected);
 
-    if (firstAnswer === "No" && restMatch) {
+    if (
+      userResponses[0] === "No" &&
+      userResponses[1] === "Yes" &&
+      userResponses[2] === "Yes" &&
+      userResponses[3] === "Yes" &&
+      userResponses[4] === "Yes" &&
+      userResponses[5] === "No" &&
+      userResponses[6] === "No"
+    ) {
       result = "Submit for Internal Review";
     } else if (allMatch) {
       result = "The Educator is Eligible";
