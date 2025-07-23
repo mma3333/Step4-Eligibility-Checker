@@ -24,7 +24,11 @@ const entryQuestions = [
 const level1Questions = [
   "Has the educator been at Step 3 for at least 12 months, Step 2 for at least 2 years, or Step 1 for at least 3 years?",
   "Does the educator hold recognized qualifications (ECE Certificate/Diploma or Degree)?",
-  "When was the educator's qualification issued? (YYYY-MM-DD)"
+  "When was the educator's qualification issued? (YYYY-MM-DD)",
+  "Has the educator accumulated at least 3 years of relevant work experience?",
+  "Is the educator at least 19 years old?",
+  "Is the Educator Conditionally Approved?",
+  "Was the educator approved in error for their current step?"
 ];
 
 const expectedAnswers = {
@@ -103,15 +107,18 @@ function renderNextQuestion() {
       const months = Math.floor((days % 365) / 30);
       const dayCount = days % 30;
 
+      userResponses[currentQuestionIndex] = years >= 3 ? "Yes" : "No";
+      resultSection.style.display = "none";
+
       const explanation = document.createElement("p");
       explanation.innerText = `Issued: ${years} years, ${months} months, ${dayCount} days ago.\n` +
         (years >= 3 ? "The qualification was issued more than 3 years ago." : "The qualification was issued less than 3 years ago.");
       group.appendChild(explanation);
 
-      userResponses[currentQuestionIndex] = years >= 3 ? "Yes" : "No";
-      resultSection.style.display = "none";
-      currentQuestionIndex++;
-      renderNextQuestion();
+      setTimeout(() => {
+        currentQuestionIndex++;
+        renderNextQuestion();
+      }, 200);
     };
     group.appendChild(label);
     group.appendChild(input);
@@ -174,8 +181,7 @@ function evaluateResult() {
       userResponses[2] === "Yes" &&
       userResponses[3] === "Yes" &&
       userResponses[4] === "Yes" &&
-      userResponses[5] === "No" &&
-      userResponses[6] === "No"
+      userResponses[5] === "No"
     ) {
       result = "Submit for Internal Review";
     } else if (
