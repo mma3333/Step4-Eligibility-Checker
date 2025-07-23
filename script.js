@@ -1,116 +1,151 @@
+const form = document.getElementById("eligibility-form");
+const resultSection = document.getElementById("result-section");
+const resultTitle = document.getElementById("result-title");
+const dynamicQuestionsDiv = document.getElementById("dynamic-questions");
+
+let answers = {
+  level: null,
+  ageGroup: null,
+};
+
+let questionFlow = [];
+let userResponses = {};
+
 const entryQuestions = [
-  { text: "Has the educator been at Step 3 for at least 1 year?", expected: "Yes" },
-  { text: "Has the educator completed the Intro to ECE (90 hours)?", expected: "Yes" },
-  { text: "Has the educator accumulated at least 3 years of experience?", expected: "Yes" },
-  { text: "Is the educator at least 19 years old?", expected: "Yes" },
-  { text: "Is the Educator Conditionally Approved?", expected: "No" },
-  { text: "Was the educator approved in error for their current step?", expected: "No" }
+  "Has the educator been at Step 3 for at least 12 months, Step 2 for at least 2 years, or Step 1 for at least 3 years?",
+  "Has the educator completed the Intro to ECE (90-hour online course)?",
+  "Has the educator accumulated at least 3 years of relevant work experience?",
+  "Is the educator at least 19 years old?",
+  "Is the Educator Conditionally Approved?",
+  "Was the educator approved in error for their current step?",
 ];
 
 const level1Questions = [
-  { text: "Has the educator been at Step 3 for at least 1 year?", expected: "No" },
-  { text: "Does the educator hold recognized qualifications?", expected: "Yes" },
-  { text: "Has the educator accumulated at least 3 years of experience?", expected: "Yes" },
-  { text: "Is the educator at least 19 years old?", expected: "Yes" },
-  { text: "Is the Educator Conditionally Approved?", expected: "No" },
-  { text: "Was the educator approved in error for their current step?", expected: "No" },
-  { text: "Were their qualifications issued at least 3 years ago?", expected: "Yes" }
+  "Has the educator been at Step 3 for at least 12 months, Step 2 for at least 2 years, or Step 1 for at least 3 years?",
+  "Does the educator hold recognized qualifications (ECE Certificate/Diploma or Degree)?",
+  "Has the educator accumulated at least 3 years of relevant work experience?",
+  "Is the educator at least 19 years old?",
+  "Is the Educator Conditionally Approved?",
+  "Was the educator approved in error for their current step?",
+  "Were their qualifications issued at least 3 years ago?",
 ];
+
+const expectedAnswers = {
+  entry: ["Yes", "Yes", "Yes", "Yes", "No", "No"],
+  level1: ["No", "Yes", "Yes", "Yes", "No", "No", "Yes"],
+};
 
 const schoolAgeQuestions = [
-  { text: "Has the educator been at Step 3 for at least 12 months, Step 2 for at least 2 years, or Step 1 for at least 3 years?", key: "stepTime" },
-  { text: "Is the educator at least 19 years old?", key: "age" }
+  "Has the educator been at Step 3 for at least 12 months, Step 2 for at least 2 years, or Step 1 for at least 3 years?",
+  "Is the educator at least 19 years old?",
 ];
 
-let currentIndex = 0;
-let userAnswers = [];
-let currentQuestions = [];
-let flowMode = ""; // "schoolAge", "entry", or "level1"
+function handleChange(step) {
+  const levelValue = document.getElementById("level").value;
+  const ageGroupValue = document.getElementById("ageGroup")?.value;
 
-function startQuiz() {
-  const schoolAgeOnly = confirm("Is the Educator working with School Age Only?");
-  const level = document.getElementById("level-select").value;
+  if (step === 0) {
+    answers.level = levelValue;
+    userResponses = {};
+    resetFromStep(1);
+    document.getElementById("group-q1").style.display = levelValue ? "block" : "none";
+  }
 
-  if (!level && !schoolAgeOnly) {
-    alert("Please select a level.");
+  if (step === 1) {
+    answers.ageGroup = ageGroupValue;
+    userResponses = {};
+    resetFromStep(2);
+    generateQuestions();
+  }
+
+  evaluateIfComplete();
+}
+
+function resetFromStep(startStep) {
+  dynamicQuestionsDiv.innerHTML = "";
+  resultSection.style.display = "none";
+  questionFlow = [];
+
+  if (startStep <= 2 && answers.ageGroup) {
+    generateQuestions();
+  }
+}
+
+function generateQuestions() {
+  dynamicQuestionsDiv.innerHTML = "";
+  questionFlow = [];
+
+  if (answers.ageGroup === "school-age") {
+    questionFlow = schoolAgeQuestions;
+  } else if (answers.ageGroup === "0-5") {
+    questionFlow = answers.level === "entry" ? entryQuestions : level1Questions;
+  }
+
+  questionFlow.forEach((question, index) => {
+    const group = document.createElement("div");
+    group.className = "form-group";
+
+    const label = document.createElement("label");
+    label.innerText = question;
+
+    const select = document.createElement("select");
+    select.setAttribute("data-qindex", index);
+    select.innerHTML = `
+      <option value="">-- Select --</option>
+      <option value="Yes">Yes</option>
+      <option value="No">No</option>
+    `;
+    select.onchange = () => {
+      const idx = parseInt(select.getAttribute("data-qindex"));
+      // Clear future answers when something changes
+      Object.keys(userResponses).forEach(key => {
+        if (parseInt(key) > idx) delete userResponses[key];
+      });
+      userResponses[idx] = select.value;
+      generateQuestions(); // regenerate to remove later answers
+      evaluateIfComplete();
+    };
+
+    // if already answered, repopulate
+    if (userResponses[index]) {
+      select.value = userResponses[index];
+    }
+
+    group.appendChild(label);
+    group.appendChild(select);
+    dynamicQuestionsDiv.appendChild(group);
+
+    // Stop generating further questions if a prior one is unanswered
+    if (!userResponses[index]) return;
+  });
+}
+
+function evaluateIfComplete() {
+  if (!answers.ageGroup || !answers.level || questionFlow.length === 0) return;
+
+  const allAnswered = questionFlow.every((_, i) => userResponses[i]);
+  if (!allAnswered) {
+    resultSection.style.display = "none";
     return;
   }
 
-  userAnswers = [];
-  currentIndex = 0;
+  // School Age Logic
+  if (answers.ageGroup === "school-age") {
+    const q1 = userResponses[0];
+    const q2 = userResponses[1];
 
-  if (schoolAgeOnly) {
-    flowMode = "schoolAge";
-    currentQuestions = schoolAgeQuestions;
-  } else {
-    flowMode = level === "entry" ? "entry" : "level1";
-    currentQuestions = level === "entry" ? entryQuestions : level1Questions;
+    let result = "The Educator is Not Eligible";
+    if (q1 === "Yes" && q2 === "Yes") result = "The Educator is Eligible";
+    else if (q1 === "No" && q2 === "Yes") result = "Submit for Internal Review";
+
+    resultTitle.innerText = result;
+    resultSection.style.display = "block";
+    return;
   }
 
-  document.getElementById("start-section").style.display = "none";
-  document.getElementById("question-section").style.display = "block";
-
-  showQuestion();
-}
-
-function showQuestion() {
-  document.getElementById("question-text").innerText = currentQuestions[currentIndex].text;
-}
-
-function submitAnswer(answer) {
-  userAnswers.push(answer);
-  currentIndex++;
-
-  if (currentIndex < currentQuestions.length) {
-    showQuestion();
-  } else {
-    showResult();
-  }
-}
-
-function showResult() {
-  document.getElementById("question-section").style.display = "none";
-  document.getElementById("result-section").style.display = "block";
-
-  const resultTitle = document.getElementById("result-title");
-  const resultMessage = document.getElementById("result-message");
-
-  let finalResult = "";
-  let reviewHtml = "";
-
-  if (flowMode === "schoolAge") {
-    const stepTime = userAnswers[0];
-    const age = userAnswers[1];
-
-    if (stepTime === "Yes" && age === "Yes") {
-      finalResult = "The Educator is Eligible";
-    } else if (stepTime === "No" && age === "Yes") {
-      finalResult = "Submit for Internal Review";
-    } else {
-      finalResult = "The Educator is Not Eligible";
-    }
-
-    reviewHtml = `
-      <details><summary>${schoolAgeQuestions[0].text}</summary><p>Your answer: ${stepTime}</p></details>
-      <details><summary>${schoolAgeQuestions[1].text}</summary><p>Your answer: ${age}</p></details>
-    `;
-
-  } else {
-    const questionList = flowMode === "entry" ? entryQuestions : level1Questions;
-    let allMatch = true;
-
-    for (let i = 0; i < questionList.length; i++) {
-      if (userAnswers[i] !== questionList[i].expected) {
-        allMatch = false;
-      }
-      reviewHtml += `
-        <details><summary>${questionList[i].text}</summary><p>Your answer: ${userAnswers[i]}</p></details>
-      `;
-    }
-
-    finalResult = allMatch ? "The Educator is Eligible" : "The Educator is Not Eligible";
-  }
-
-  resultTitle.innerText = finalResult;
-  resultMessage.innerHTML = reviewHtml;
+  // 0–5 Logic (Entry or Level 1)
+  const expected = expectedAnswers[answers.level];
+  const match = expected.every((ans, i) => userResponses[i] === ans);
+  resultTitle.innerText = match ? "The Educator is Eligible" : "The Educator is Not Eligible";
+  resultSection.style.display = "block";
 }
