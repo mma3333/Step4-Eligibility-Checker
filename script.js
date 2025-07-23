@@ -10,6 +10,7 @@ let answers = {
 
 let questionFlow = [];
 let userResponses = {};
+let currentQuestionIndex = 0;
 
 const entryQuestions = [
   "Has the educator been at Step 3 for at least 12 months, Step 2 for at least 2 years, or Step 1 for at least 3 years?",
@@ -17,7 +18,7 @@ const entryQuestions = [
   "Has the educator accumulated at least 3 years of relevant work experience?",
   "Is the educator at least 19 years old?",
   "Is the Educator Conditionally Approved?",
-  "Was the educator approved in error for their current step?",
+  "Was the educator approved in error for their current step?"
 ];
 
 const level1Questions = [
@@ -27,17 +28,18 @@ const level1Questions = [
   "Is the educator at least 19 years old?",
   "Is the Educator Conditionally Approved?",
   "Was the educator approved in error for their current step?",
-  "Were their qualifications issued at least 3 years ago?",
+  "Were their qualifications issued at least 3 years ago?"
 ];
 
+// ✅ Updated expectations for renamed questions
 const expectedAnswers = {
   entry: ["Yes", "Yes", "Yes", "Yes", "No", "No"],
-  level1: ["No", "Yes", "Yes", "Yes", "No", "No", "Yes"],
+  level1: ["No", "Yes", "Yes", "Yes", "No", "No", "Yes"]
 };
 
 const schoolAgeQuestions = [
   "Has the educator been at Step 3 for at least 12 months, Step 2 for at least 2 years, or Step 1 for at least 3 years?",
-  "Is the educator at least 19 years old?",
+  "Is the educator at least 19 years old?"
 ];
 
 function handleChange(step) {
@@ -46,106 +48,100 @@ function handleChange(step) {
 
   if (step === 0) {
     answers.level = levelValue;
+    answers.ageGroup = null;
     userResponses = {};
-    resetFromStep(1);
+    currentQuestionIndex = 0;
     document.getElementById("group-q1").style.display = levelValue ? "block" : "none";
+    dynamicQuestionsDiv.innerHTML = "";
+    resultSection.style.display = "none";
   }
 
   if (step === 1) {
     answers.ageGroup = ageGroupValue;
     userResponses = {};
-    resetFromStep(2);
-    generateQuestions();
-  }
-
-  evaluateIfComplete();
-}
-
-function resetFromStep(startStep) {
-  dynamicQuestionsDiv.innerHTML = "";
-  resultSection.style.display = "none";
-  questionFlow = [];
-
-  if (startStep <= 2 && answers.ageGroup) {
-    generateQuestions();
-  }
-}
-
-function generateQuestions() {
-  dynamicQuestionsDiv.innerHTML = "";
-  questionFlow = [];
-
-  if (answers.ageGroup === "school-age") {
-    questionFlow = schoolAgeQuestions;
-  } else if (answers.ageGroup === "0-5") {
-    questionFlow = answers.level === "entry" ? entryQuestions : level1Questions;
-  }
-
-  questionFlow.forEach((question, index) => {
-    const group = document.createElement("div");
-    group.className = "form-group";
-
-    const label = document.createElement("label");
-    label.innerText = question;
-
-    const select = document.createElement("select");
-    select.setAttribute("data-qindex", index);
-    select.innerHTML = `
-      <option value="">-- Select --</option>
-      <option value="Yes">Yes</option>
-      <option value="No">No</option>
-    `;
-    select.onchange = () => {
-      const idx = parseInt(select.getAttribute("data-qindex"));
-      // Clear future answers when something changes
-      Object.keys(userResponses).forEach(key => {
-        if (parseInt(key) > idx) delete userResponses[key];
-      });
-      userResponses[idx] = select.value;
-      generateQuestions(); // regenerate to remove later answers
-      evaluateIfComplete();
-    };
-
-    // if already answered, repopulate
-    if (userResponses[index]) {
-      select.value = userResponses[index];
-    }
-
-    group.appendChild(label);
-    group.appendChild(select);
-    dynamicQuestionsDiv.appendChild(group);
-
-    // Stop generating further questions if a prior one is unanswered
-    if (!userResponses[index]) return;
-  });
-}
-
-function evaluateIfComplete() {
-  if (!answers.ageGroup || !answers.level || questionFlow.length === 0) return;
-
-  const allAnswered = questionFlow.every((_, i) => userResponses[i]);
-  if (!allAnswered) {
+    currentQuestionIndex = 0;
+    dynamicQuestionsDiv.innerHTML = "";
     resultSection.style.display = "none";
+
+    questionFlow = (ageGroupValue === "school-age")
+      ? schoolAgeQuestions
+      : (answers.level === "entry" ? entryQuestions : level1Questions);
+
+    renderNextQuestion();
+  }
+}
+
+function renderNextQuestion() {
+  if (currentQuestionIndex >= questionFlow.length) {
+    evaluateResult();
     return;
   }
 
-  // School Age Logic
+  const question = questionFlow[currentQuestionIndex];
+  const group = document.createElement("div");
+  group.className = "form-group";
+  group.id = `q-${currentQuestionIndex}`;
+
+  const label = document.createElement("label");
+  label.innerText = `${currentQuestionIndex + 1}. ${question}`;
+
+  const select = document.createElement("select");
+  select.setAttribute("data-qindex", currentQuestionIndex);
+  select.innerHTML = `
+    <option value="">-- Select --</option>
+    <option value="Yes">Yes</option>
+    <option value="No">No</option>
+  `;
+  select.onchange = () => {
+    const idx = parseInt(select.getAttribute("data-qindex"));
+    userResponses[idx] = select.value;
+
+    // Remove all future questions & answers
+    for (let i = idx + 1; i < questionFlow.length; i++) {
+      delete userResponses[i];
+      const q = document.getElementById(`q-${i}`);
+      if (q) q.remove();
+    }
+
+    resultSection.style.display = "none";
+
+    currentQuestionIndex = idx + 1;
+    renderNextQuestion();
+  };
+
+  // Restore previously selected value (if any)
+  if (userResponses[currentQuestionIndex]) {
+    select.value = userResponses[currentQuestionIndex];
+  }
+
+  group.appendChild(label);
+  group.appendChild(select);
+  dynamicQuestionsDiv.appendChild(group);
+}
+
+function evaluateResult() {
+  const allAnswered = questionFlow.every((_, i) => userResponses[i]);
+  if (!allAnswered) return;
+
+  let result = "The Educator is Not Eligible";
+
   if (answers.ageGroup === "school-age") {
     const q1 = userResponses[0];
     const q2 = userResponses[1];
 
-    let result = "The Educator is Not Eligible";
-    if (q1 === "Yes" && q2 === "Yes") result = "The Educator is Eligible";
-    else if (q1 === "No" && q2 === "Yes") result = "Submit for Internal Review";
-
-    resultTitle.innerText = result;
-    resultSection.style.display = "block";
-    return;
+    if (q1 === "Yes" && q2 === "Yes") {
+      result = "The Educator is Eligible";
+    } else if (q1 === "No" && q2 === "Yes") {
+      result = "Submit for Internal Review";
+    } else {
+      result = "The Educator is Not Eligible";
+    }
+  } else {
+    const expectations = expectedAnswers[answers.level];
+    const match = expectations.every((expected, i) => userResponses[i] === expected);
+    result = match ? "The Educator is Eligible" : "The Educator is Not Eligible";
   }
 
-  // 0–5 Logic (Entry or Level 1)
-  const expected = expectedAnswers[answers.level];
-  const match = expected.every((ans, i) => userResponses[i] === ans);
-  resultTitle.innerText = match ? "The Educator is Eligible" : "The Educator is Not Eligible";
+  resultTitle.innerText = result;
   resultSection.style.display = "block";
 }
