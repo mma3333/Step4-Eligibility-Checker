@@ -74,13 +74,39 @@ button:hover {
 
 #result-title {
   text-align: center;
-  font-size: 24px;
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 20px;
   color: #156b72;
 }
 
 #result-message {
-  text-align: center;
-  font-size: 16px;
+  margin-top: 20px;
+}
+
+details {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 10px 15px;
+  margin-bottom: 12px;
+  background-color: #f4f8f9;
+  cursor: pointer;
+}
+
+details summary {
+  font-weight: 600;
+  font-size: 15px;
+  color: #156b72;
+  margin-bottom: 6px;
+  outline: none;
+}
+
+details[open] {
+  background-color: #eaf2f3;
+}
+
+details p {
+  margin: 8px 0 0 0;
+  padding-left: 10px;
   color: #444;
-  margin-bottom: 20px;
 }
