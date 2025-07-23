@@ -136,10 +136,21 @@ function evaluateResult() {
     } else {
       result = "The Educator is Not Eligible";
     }
+
   } else {
     const expectations = expectedAnswers[answers.level];
     const match = expectations.every((expected, i) => userResponses[i] === expected);
-    result = match ? "The Educator is Eligible" : "The Educator is Not Eligible";
+
+    // Special case: Level 1 with 0–5 AND all match BUT Q1 = "No"
+    if (
+      answers.level === "level1" &&
+      match &&
+      userResponses[0] === "No"
+    ) {
+      result = "Submit for Internal Review";
+    } else {
+      result = match ? "The Educator is Eligible" : "The Educator is Not Eligible";
+    }
   }
 
   resultTitle.innerText = result;
