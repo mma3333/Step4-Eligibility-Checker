@@ -32,10 +32,10 @@ const level1Questions = [
   "Was the educator approved in error for their current step?"
 ];
 
-// ✅ Updated expected answers for reordered Entry Level
+// Must match question order exactly
 const expectedAnswers = {
-  entry: ["Yes", "Yes", "Yes", "Yes", "Yes", "No", "No"],
-  level1: ["No", "Yes", "Yes", "Yes", "Yes", "No", "No"]
+  entry:  ["Yes", "Yes", "Yes", "Yes", "Yes", "No", "No"],
+  level1: ["No",  "Yes", "Yes", "Yes", "Yes", "No", "No"]
 };
 
 const schoolAgeQuestions = [
@@ -105,12 +105,11 @@ function renderNextQuestion() {
     }
 
     resultSection.style.display = "none";
-
     currentQuestionIndex = idx + 1;
     renderNextQuestion();
   };
 
-  // Restore previously selected value (if any)
+  // Restore value if already selected
   if (userResponses[currentQuestionIndex]) {
     select.value = userResponses[currentQuestionIndex];
   }
@@ -140,17 +139,14 @@ function evaluateResult() {
 
   } else {
     const expectations = expectedAnswers[answers.level];
-    const match = expectations.every((expected, i) => userResponses[i] === expected);
+    const allMatch = expectations.every((expected, i) => userResponses[i] === expected);
 
-    // ✅ Special rule for both Entry and Level 1 when Q1 = No
-    if (
-      (answers.level === "entry" || answers.level === "level1") &&
-      match &&
-      userResponses[0] === "No"
-    ) {
+    const firstAnswer = userResponses[0];
+
+    if (allMatch && firstAnswer === "No") {
       result = "Submit for Internal Review";
     } else {
-      result = match ? "The Educator is Eligible" : "The Educator is Not Eligible";
+      result = allMatch ? "The Educator is Eligible" : "The Educator is Not Eligible";
     }
   }
 
