@@ -11,6 +11,7 @@
     <h1>Step 4 Eligibility Checker</h1>
     <p class="subtitle">Check if an Educator is eligible for Step 4.</p>
 
+    <!-- Start Section -->
     <div id="start-section">
       <label for="level-select">What level is the educator requesting?</label>
       <select id="level-select">
@@ -21,6 +22,7 @@
       <button onclick="startQuiz()">Start</button>
     </div>
 
+    <!-- Question Section -->
     <div id="question-section" style="display:none;">
       <p id="question-text"></p>
       <div class="buttons">
@@ -29,9 +31,10 @@
       </div>
     </div>
 
+    <!-- Result Section -->
     <div id="result-section" style="display:none;">
       <h2 id="result-title"></h2>
-      <p id="result-message"></p>
+      <div id="result-message"></div>
       <button onclick="location.reload()">Start Over</button>
     </div>
   </div>
@@ -39,4 +42,3 @@
   <script src="script.js"></script>
 </body>
 </html>
-
