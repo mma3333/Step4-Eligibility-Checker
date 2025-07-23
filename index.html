@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -11,32 +11,35 @@
     <h1>Step 4 Eligibility Checker</h1>
     <p class="subtitle">Check if an Educator is eligible for Step 4.</p>
 
-    <!-- Start Section -->
-    <div id="start-section">
-      <label for="level-select">What level is the educator requesting?</label>
-      <select id="level-select">
-        <option value="">-- Select Level --</option>
-        <option value="entry">Entry Level – Step 4</option>
-        <option value="level1">Level 1 – Step 4</option>
-      </select>
-      <button onclick="startQuiz()">Start</button>
-    </div>
-
-    <!-- Question Section -->
-    <div id="question-section" style="display:none;">
-      <p id="question-text"></p>
-      <div class="buttons">
-        <button onclick="submitAnswer('Yes')">Yes</button>
-        <button onclick="submitAnswer('No')">No</button>
+    <form id="eligibility-form">
+      <!-- Q1: Educator Level -->
+      <div class="form-group">
+        <label for="level">What level is the educator requesting?</label>
+        <select id="level" name="level" onchange="handleChange(0)">
+          <option value="">-- Select --</option>
+          <option value="entry">Entry Level – Step 4</option>
+          <option value="level1">Level 1 – Step 4</option>
+        </select>
       </div>
-    </div>
 
-    <!-- Result Section -->
-    <div id="result-section" style="display:none;">
-      <h2 id="result-title"></h2>
-      <div id="result-message"></div>
-      <button onclick="location.reload()">Start Over</button>
-    </div>
+      <!-- Q2: Age Group -->
+      <div class="form-group" id="group-q1" style="display:none;">
+        <label for="ageGroup">The educator works with:</label>
+        <select id="ageGroup" name="ageGroup" onchange="handleChange(1)">
+          <option value="">-- Select --</option>
+          <option value="0-5">0–5</option>
+          <option value="school-age">School Age Only</option>
+        </select>
+      </div>
+
+      <!-- Dynamic questions will be inserted here -->
+      <div id="dynamic-questions"></div>
+
+      <!-- Result -->
+      <div id="result-section" style="display:none;">
+        <h2 id="result-title"></h2>
+      </div>
+    </form>
   </div>
 
   <script src="script.js"></script>
