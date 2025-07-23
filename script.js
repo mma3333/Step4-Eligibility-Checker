@@ -111,7 +111,11 @@ function renderNextQuestion() {
       userResponses[currentQuestionIndex] = years >= 3 ? "Yes" : "No";
       resultSection.style.display = "none";
 
+      const oldExplanation = group.querySelector(".explanation");
+      if (oldExplanation) oldExplanation.remove();
+
       const explanation = document.createElement("p");
+      explanation.className = "explanation";
       explanation.innerText = `Issued: ${years} years, ${months} months, ${dayCount} days ago.\n` +
         (years >= 3 ? "The qualification was issued more than 3 years ago." : "The qualification was issued less than 3 years ago.");
       group.appendChild(explanation);
@@ -133,7 +137,6 @@ function renderNextQuestion() {
       btn.type = "button";
       btn.className = "btn btn-option";
       btn.textContent = option;
-      btn.onclick = () => handleAnswer(option);
       btn.style.margin = "5px";
       btn.style.padding = "10px 20px";
       btn.style.border = "1px solid #ccc";
@@ -142,12 +145,17 @@ function renderNextQuestion() {
       btn.style.backgroundColor = "#f8f8f8";
       btn.style.fontWeight = "bold";
 
-      btn.addEventListener("click", function () {
+      btn.onclick = function () {
+        if (userResponses[currentQuestionIndex] !== undefined) return;
         const allButtons = group.querySelectorAll("button");
-        allButtons.forEach(b => b.style.backgroundColor = "#f8f8f8");
+        allButtons.forEach(b => {
+          b.style.backgroundColor = "#f8f8f8";
+          b.style.color = "#000";
+        });
         this.style.backgroundColor = "#156b72";
         this.style.color = "#fff";
-      });
+        handleAnswer(option);
+      };
 
       group.appendChild(btn);
     });
