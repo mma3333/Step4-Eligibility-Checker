@@ -95,7 +95,7 @@ function renderNextQuestion() {
   label.innerText = `${currentQuestionIndex + 1}. ${question}`;
   group.appendChild(label);
 
-  if (question.includes("When was the educator's qualification issued?")) {
+  if (question.includes("When was the educator's qualification issued")) {
     const input = document.createElement("input");
     input.type = "date";
     input.setAttribute("data-qindex", currentQuestionIndex);
@@ -120,14 +120,7 @@ function renderNextQuestion() {
         (years >= 3 ? "The qualification was issued more than 3 years ago." : "The qualification was issued less than 3 years ago.");
       group.appendChild(explanation);
 
-      setTimeout(() => {
-        currentQuestionIndex++;
-        if (currentQuestionIndex >= questionFlow.length) {
-          evaluateResult();
-        } else {
-          renderNextQuestion();
-        }
-      }, 200);
+      updateAnswers();
     };
     group.appendChild(input);
   } else {
@@ -146,7 +139,6 @@ function renderNextQuestion() {
       btn.style.fontWeight = "bold";
 
       btn.onclick = function () {
-        if (userResponses[currentQuestionIndex] !== undefined) return;
         const allButtons = group.querySelectorAll("button");
         allButtons.forEach(b => {
           b.style.backgroundColor = "#f8f8f8";
@@ -154,7 +146,8 @@ function renderNextQuestion() {
         });
         this.style.backgroundColor = "#156b72";
         this.style.color = "#fff";
-        handleAnswer(option);
+        userResponses[currentQuestionIndex] = option;
+        updateAnswers();
       };
 
       group.appendChild(btn);
@@ -164,21 +157,20 @@ function renderNextQuestion() {
   dynamicQuestionsDiv.appendChild(group);
 }
 
-function handleAnswer(answer) {
+function updateAnswers() {
   const idx = currentQuestionIndex;
-  userResponses[idx] = answer;
   for (let i = idx + 1; i < questionFlow.length; i++) {
     delete userResponses[i];
     const q = document.getElementById(`q-${i}`);
     if (q) q.remove();
   }
-  resultSection.style.display = "none";
-  currentQuestionIndex = idx + 1;
+  currentQuestionIndex = Object.keys(userResponses).length;
   renderNextQuestion();
+  evaluateResult();
 }
 
 function evaluateResult() {
-  const allAnswered = questionFlow.every((_, i) => userResponses[i]);
+  const allAnswered = questionFlow.every((_, i) => userResponses[i] !== undefined);
   if (!allAnswered) return;
 
   let result = "The Educator is Not Eligible";
