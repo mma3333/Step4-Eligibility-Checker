@@ -117,7 +117,11 @@ function renderNextQuestion() {
 
       setTimeout(() => {
         currentQuestionIndex++;
-        renderNextQuestion();
+        if (currentQuestionIndex >= questionFlow.length) {
+          evaluateResult();
+        } else {
+          renderNextQuestion();
+        }
       }, 200);
     };
     group.appendChild(label);
@@ -172,7 +176,7 @@ function evaluateResult() {
     }
   } else {
     const expectations = expectedAnswers[answers.level];
-    const allMatch = expectations.every((expected, i) => userResponses[i] === expected);
+    const allMatch = expectations?.every((expected, i) => userResponses[i] === expected);
 
     if (
       answers.level === "entry" &&
