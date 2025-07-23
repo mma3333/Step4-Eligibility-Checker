@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Step 4 Eligibility Checker</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .question { margin-bottom: 10px; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <h2>Step 4 Eligibility Checker</h2>
+  <label for="stepChoice">Is the educator requesting Entry Level - Step 4 or Level 1 - Step 4?</label>
+  <select id="stepChoice" onchange="loadQuestions()">
+    <option value="">-- Select --</option>
+    <option value="entry">Entry Level - Step 4</option>
+    <option value="level1">Level 1 - Step 4</option>
+  </select>
+ 
+  <form id="questionForm" class="hidden">
+    <div id="questionsContainer"></div>
+    <button type="button" onclick="checkEligibility()">Check Eligibility</button>
+  </form>
+ 
+  <div id="result"></div>
+ 
+  <script>
+    const questions = {
+      entry: [
+        "Has the educator been at Step 3 for at least 12 months, Step 2 for at least 2 years, or Step 1 for at least 3 years?",
+        "Has the educator completed the Intro to ECE (90-hour online course)?",
+        "Has the educator accumulated at least 3 years of relevant work experience?",
+        "Is the educator at least 19 years old?",
+        "NOT conditionally approved?",
+        "NOT approved in error for their current step?"
+      ],
+      level1: [
+        "Has the educator been at Step 3 for at least 12 months, Step 2 for at least 2 years, or Step 1 for at least 3 years?",
+        "Does the educator hold recognized qualifications (ECE Certificate/Diploma or Degree)?",
+        "Has the educator accumulated at least 3 years of relevant work experience?",
+        "Is the educator at least 19 years old?",
+        "NOT conditionally approved?",
+        "NOT approved in error for their current step?",
+        "Were their qualifications issued at least 3 years ago?"
+      ]
+    };
+ 
+    function loadQuestions() {
+      const type = document.getElementById("stepChoice").value;
+      const container = document.getElementById("questionsContainer");
+      const form = document.getElementById("questionForm");
+      container.innerHTML = "";
+      if (!type) {
+        form.classList.add("hidden");
+        return;
+      }
+      questions[type].forEach((q, i) => {
+        container.innerHTML += `
+          <div class="question">
+            <label>${q}</label><br>
+            <select id="q${i}">
+              <option value="">-- Select --</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+        `;
+      });
+      form.classList.remove("hidden");
+    }
+ 
+    function checkEligibility() {
+      const type = document.getElementById("stepChoice").value;
+      const total = questions[type].length;
+      let answers = [];
+      for (let i = 0; i < total; i++) {
+        const val = document.getElementById(`q${i}`).value;
+        if (!val) {
+          alert("Please answer all questions.");
+          return;
+        }
+        answers.push(val);
+      }
+ 
+      let result = "";
+      if (type === "entry") {
+        result = answers.every(a => a === "yes") ? "✅ Eligible" : "❌ Not Eligible";
+      } else {
+        result = (answers[0] === "yes" && answers.slice(1).every(a => a === "yes"))
+          ? "✅ Eligible"
+          : "📤 Submit for Internal Review";
+      }
+ 
+      document.getElementById("result").innerHTML = `<h3>Result: ${result}</h3>`;
+    }
+  </script>
+</body>
+</html>
