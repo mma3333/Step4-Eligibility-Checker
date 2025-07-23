@@ -1,3 +1,35 @@
+<div id="eligibility-form" style="font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; line-height: 1.6">
+  <h2>Step 4 Eligibility Estimator</h2>
+  <p style="background-color:#fff3cd; border:1px solid #ffeeba; padding:10px; border-radius:5px; font-size:14px;">
+    This tool is intended for internal use only. Please do not share it with anyone outside of EECD. It was created to help guide you in asking the right questions when operators request information about an educator’s eligibility for Step 4. Use it to support and streamline your workflow. Please note that this is only an estimator — final eligibility can only be determined after a complete application, along with all required documents, has been submitted and reviewed by EECD.
+  </p>
+
+  <div class="form-group">
+    <label>What level is the educator requesting?</label><br>
+    <select id="level" onchange="handleChange(0)">
+      <option value="">-- Select --</option>
+      <option value="entry">Entry Level – Step 4</option>
+      <option value="level1">Level 1 – Step 4</option>
+    </select>
+  </div>
+
+  <div id="group-q1" class="form-group" style="display:none;">
+    <label>The educator works with:</label><br>
+    <select id="ageGroup" onchange="handleChange(1)">
+      <option value="">-- Select --</option>
+      <option value="0-5">0–5</option>
+      <option value="school-age">School Age Only</option>
+    </select>
+  </div>
+
+  <div id="dynamic-questions"></div>
+
+  <div id="result-section" style="display:none; margin-top:20px; padding:15px; border:2px solid #ccc; border-radius:5px;">
+    <h3 id="result-title" style="color:#156b72;"></h3>
+  </div>
+</div>
+
+<script>
 const form = document.getElementById("eligibility-form");
 const resultSection = document.getElementById("result-section");
 const resultTitle = document.getElementById("result-title");
@@ -10,9 +42,6 @@ let answers = {
 
 let questionFlow = [];
 let userResponses = {};
-
-document.getElementById("description-message").innerText =
-  "This tool is intended for internal use only. Please do not share it with anyone outside of EECD. It was created to help guide you in asking the right questions when operators request information about an educator’s eligibility for Step 4. Use it to support and streamline your workflow. Please note that this is only an estimator — final eligibility can only be determined after a complete application, along with all required documents, has been submitted and reviewed by EECD.";
 
 const entryQuestions = [
   "Has the educator been at Step 3 for at least 12 months, Step 2 for at least 2 years, or Step 1 for at least 3 years?",
@@ -48,14 +77,6 @@ const schoolAgeQuestionsLevel1 = [
   "Does the educator hold recognized qualifications (ECE Certificate/Diploma or Degree)?",
   "Is the educator at least 19 years old?"
 ];
-
-document.getElementById("level").addEventListener("change", () => {
-  handleChange(0);
-});
-
-document.getElementById("ageGroup").addEventListener("change", () => {
-  handleChange(1);
-});
 
 function handleChange(step) {
   const levelValue = document.getElementById("level").value;
@@ -241,3 +262,4 @@ function evaluateResult() {
   resultTitle.innerText = result;
   resultSection.style.display = "block";
 }
+</script>
