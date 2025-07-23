@@ -3,8 +3,8 @@ const entryQuestions = [
   { text: "Has the educator completed the Intro to ECE (90 hours)?", expected: "Yes" },
   { text: "Has the educator accumulated at least 3 years of experience?", expected: "Yes" },
   { text: "Is the educator at least 19 years old?", expected: "Yes" },
-  { text: "NOT conditionally approved?", expected: "Yes" },
-  { text: "NOT approved in error for their current step?", expected: "Yes" },
+  { text: "Is the Educator Conditionally Approved?", expected: "No" },
+  { text: "Was the educator approved in error for their current step?", expected: "No" }
 ];
 
 const level1Questions = [
@@ -12,27 +12,40 @@ const level1Questions = [
   { text: "Does the educator hold recognized qualifications?", expected: "Yes" },
   { text: "Has the educator accumulated at least 3 years of experience?", expected: "Yes" },
   { text: "Is the educator at least 19 years old?", expected: "Yes" },
-  { text: "NOT conditionally approved?", expected: "Yes" },
-  { text: "NOT approved in error for their current step?", expected: "Yes" },
-  { text: "Were their qualifications issued at least 3 years ago?", expected: "Yes" },
+  { text: "Is the Educator Conditionally Approved?", expected: "No" },
+  { text: "Was the educator approved in error for their current step?", expected: "No" },
+  { text: "Were their qualifications issued at least 3 years ago?", expected: "Yes" }
 ];
 
-let currentLevel = "";
-let currentQuestions = [];
+const schoolAgeQuestions = [
+  { text: "Has the educator been at Step 3 for at least 12 months, Step 2 for at least 2 years, or Step 1 for at least 3 years?", key: "stepTime" },
+  { text: "Is the educator at least 19 years old?", key: "age" }
+];
+
 let currentIndex = 0;
 let userAnswers = [];
+let currentQuestions = [];
+let flowMode = ""; // "schoolAge", "entry", or "level1"
 
 function startQuiz() {
+  const schoolAgeOnly = confirm("Is the Educator working with School Age Only?");
   const level = document.getElementById("level-select").value;
-  if (!level) {
+
+  if (!level && !schoolAgeOnly) {
     alert("Please select a level.");
     return;
   }
 
-  currentLevel = level;
-  currentQuestions = level === "entry" ? entryQuestions : level1Questions;
-  currentIndex = 0;
   userAnswers = [];
+  currentIndex = 0;
+
+  if (schoolAgeOnly) {
+    flowMode = "schoolAge";
+    currentQuestions = schoolAgeQuestions;
+  } else {
+    flowMode = level === "entry" ? "entry" : "level1";
+    currentQuestions = level === "entry" ? entryQuestions : level1Questions;
+  }
 
   document.getElementById("start-section").style.display = "none";
   document.getElementById("question-section").style.display = "block";
@@ -41,14 +54,13 @@ function startQuiz() {
 }
 
 function showQuestion() {
-  const question = currentQuestions[currentIndex];
-  document.getElementById("question-text").innerText = question.text;
+  document.getElementById("question-text").innerText = currentQuestions[currentIndex].text;
 }
 
 function submitAnswer(answer) {
   userAnswers.push(answer);
-
   currentIndex++;
+
   if (currentIndex < currentQuestions.length) {
     showQuestion();
   } else {
@@ -60,22 +72,45 @@ function showResult() {
   document.getElementById("question-section").style.display = "none";
   document.getElementById("result-section").style.display = "block";
 
-  let allMatch = true;
-  for (let i = 0; i < currentQuestions.length; i++) {
-    if (userAnswers[i] !== currentQuestions[i].expected) {
-      allMatch = false;
-      break;
-    }
-  }
-
   const resultTitle = document.getElementById("result-title");
   const resultMessage = document.getElementById("result-message");
 
-  if (allMatch) {
-    resultTitle.innerText = "✅ You are eligible for Step 4";
-    resultMessage.innerText = "Based on your answers, you meet all the requirements.";
+  let finalResult = "";
+  let reviewHtml = "";
+
+  if (flowMode === "schoolAge") {
+    const stepTime = userAnswers[0];
+    const age = userAnswers[1];
+
+    if (stepTime === "Yes" && age === "Yes") {
+      finalResult = "The Educator is Eligible";
+    } else if (stepTime === "No" && age === "Yes") {
+      finalResult = "Submit for Internal Review";
+    } else {
+      finalResult = "The Educator is Not Eligible";
+    }
+
+    reviewHtml = `
+      <details><summary>${schoolAgeQuestions[0].text}</summary><p>Your answer: ${stepTime}</p></details>
+      <details><summary>${schoolAgeQuestions[1].text}</summary><p>Your answer: ${age}</p></details>
+    `;
+
   } else {
-    resultTitle.innerText = "❌ You may not be eligible";
-    resultMessage.innerText = "Based on your answers, it seems you do not meet all the requirements. Please verify your information or consult the WSP-ECE team.";
+    const questionList = flowMode === "entry" ? entryQuestions : level1Questions;
+    let allMatch = true;
+
+    for (let i = 0; i < questionList.length; i++) {
+      if (userAnswers[i] !== questionList[i].expected) {
+        allMatch = false;
+      }
+      reviewHtml += `
+        <details><summary>${questionList[i].text}</summary><p>Your answer: ${userAnswers[i]}</p></details>
+      `;
+    }
+
+    finalResult = allMatch ? "The Educator is Eligible" : "The Educator is Not Eligible";
   }
+
+  resultTitle.innerText = finalResult;
+  resultMessage.innerHTML = reviewHtml;
 }
