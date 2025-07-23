@@ -14,12 +14,12 @@ let currentQuestionIndex = 0;
 
 const entryQuestions = [
   "Has the educator been at Step 3 for at least 12 months, Step 2 for at least 2 years, or Step 1 for at least 3 years?",
+  "Were their qualifications issued at least 3 years ago?",
   "Has the educator completed the Intro to ECE (90-hour online course)?",
   "Has the educator accumulated at least 3 years of relevant work experience?",
   "Is the educator at least 19 years old?",
   "Is the Educator Conditionally Approved?",
-  "Was the educator approved in error for their current step?",
-  "Were their qualifications issued at least 3 years ago?"
+  "Was the educator approved in error for their current step?"
 ];
 
 const level1Questions = [
@@ -32,9 +32,9 @@ const level1Questions = [
   "Was the educator approved in error for their current step?"
 ];
 
-// ✅ Updated expectations
+// ✅ Updated expected answers for reordered Entry Level
 const expectedAnswers = {
-  entry: ["Yes", "Yes", "Yes", "Yes", "No", "No", "Yes"],
+  entry: ["Yes", "Yes", "Yes", "Yes", "Yes", "No", "No"],
   level1: ["No", "Yes", "Yes", "Yes", "Yes", "No", "No"]
 };
 
@@ -142,7 +142,7 @@ function evaluateResult() {
     const expectations = expectedAnswers[answers.level];
     const match = expectations.every((expected, i) => userResponses[i] === expected);
 
-    // ✅ Special rule applies to both Entry and Level 1
+    // ✅ Special rule for both Entry and Level 1 when Q1 = No
     if (
       (answers.level === "entry" || answers.level === "level1") &&
       match &&
