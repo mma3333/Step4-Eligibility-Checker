@@ -97,7 +97,6 @@ function renderNextQuestion() {
     const idx = parseInt(select.getAttribute("data-qindex"));
     userResponses[idx] = select.value;
 
-    // Remove all future questions & answers
     for (let i = idx + 1; i < questionFlow.length; i++) {
       delete userResponses[i];
       const q = document.getElementById(`q-${i}`);
@@ -109,7 +108,6 @@ function renderNextQuestion() {
     renderNextQuestion();
   };
 
-  // Restore value if already selected
   if (userResponses[currentQuestionIndex]) {
     select.value = userResponses[currentQuestionIndex];
   }
@@ -139,14 +137,16 @@ function evaluateResult() {
 
   } else {
     const expectations = expectedAnswers[answers.level];
+    const firstAnswer = userResponses[0];
+    const restMatch = expectations.slice(1).every((expected, i) => userResponses[i + 1] === expected);
     const allMatch = expectations.every((expected, i) => userResponses[i] === expected);
 
-    const firstAnswer = userResponses[0];
-
-    if (allMatch && firstAnswer === "No") {
+    if (answers.level === "entry" && firstAnswer === "No" && restMatch) {
       result = "Submit for Internal Review";
+    } else if (allMatch) {
+      result = "The Educator is Eligible";
     } else {
-      result = allMatch ? "The Educator is Eligible" : "The Educator is Not Eligible";
+      result = "The Educator is Not Eligible";
     }
   }
 
