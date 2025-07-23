@@ -18,23 +18,24 @@ const entryQuestions = [
   "Has the educator accumulated at least 3 years of relevant work experience?",
   "Is the educator at least 19 years old?",
   "Is the Educator Conditionally Approved?",
-  "Was the educator approved in error for their current step?"
+  "Was the educator approved in error for their current step?",
+  "Were their qualifications issued at least 3 years ago?"
 ];
 
 const level1Questions = [
   "Has the educator been at Step 3 for at least 12 months, Step 2 for at least 2 years, or Step 1 for at least 3 years?",
   "Does the educator hold recognized qualifications (ECE Certificate/Diploma or Degree)?",
+  "Were their qualifications issued at least 3 years ago?",
   "Has the educator accumulated at least 3 years of relevant work experience?",
   "Is the educator at least 19 years old?",
   "Is the Educator Conditionally Approved?",
-  "Was the educator approved in error for their current step?",
-  "Were their qualifications issued at least 3 years ago?"
+  "Was the educator approved in error for their current step?"
 ];
 
-// ✅ Updated expectations for renamed questions
+// ✅ Updated expectations
 const expectedAnswers = {
-  entry: ["Yes", "Yes", "Yes", "Yes", "No", "No"],
-  level1: ["No", "Yes", "Yes", "Yes", "No", "No", "Yes"]
+  entry: ["Yes", "Yes", "Yes", "Yes", "No", "No", "Yes"],
+  level1: ["No", "Yes", "Yes", "Yes", "Yes", "No", "No"]
 };
 
 const schoolAgeQuestions = [
@@ -141,9 +142,9 @@ function evaluateResult() {
     const expectations = expectedAnswers[answers.level];
     const match = expectations.every((expected, i) => userResponses[i] === expected);
 
-    // ✅ Applies to both Entry Level and Level 1
+    // ✅ Special rule applies to both Entry and Level 1
     if (
-      (answers.level === "level1" || answers.level === "entry") &&
+      (answers.level === "entry" || answers.level === "level1") &&
       match &&
       userResponses[0] === "No"
     ) {
