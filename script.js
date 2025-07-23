@@ -32,9 +32,15 @@ const level1Questions = [
 
 const expectedAnswers = {
   entry: ["Yes", "Yes", "Yes", "Yes", "No", "No"],
+  level1: ["Yes", "Yes", "Yes", "Yes", "Yes", "No", "No"]
 };
 
-const schoolAgeQuestions = [
+const schoolAgeQuestionsEntry = [
+  "Has the educator been at Step 3 for at least 12 months, Step 2 for at least 2 years, or Step 1 for at least 3 years?",
+  "Is the educator at least 19 years old?"
+];
+
+const schoolAgeQuestionsLevel1 = [
   "Has the educator been at Step 3 for at least 12 months, Step 2 for at least 2 years, or Step 1 for at least 3 years?",
   "Does the educator hold recognized qualifications (ECE Certificate/Diploma or Degree)?",
   "Is the educator at least 19 years old?"
@@ -68,7 +74,9 @@ function handleChange(step) {
     resultSection.style.display = "none";
 
     if (answers.ageGroup === "school-age" && answers.level === "level1") {
-      questionFlow = schoolAgeQuestions;
+      questionFlow = schoolAgeQuestionsLevel1;
+    } else if (answers.ageGroup === "school-age" && answers.level === "entry") {
+      questionFlow = schoolAgeQuestionsEntry;
     } else {
       questionFlow = answers.level === "entry" ? entryQuestions : level1Questions;
     }
@@ -176,6 +184,17 @@ function evaluateResult() {
     } else {
       result = "The Educator is Not Eligible";
     }
+  } else if (answers.ageGroup === "school-age" && answers.level === "entry") {
+    const q1 = userResponses[0];
+    const q2 = userResponses[1];
+
+    if (q1 === "Yes" && q2 === "Yes") {
+      result = "The Educator is Eligible";
+    } else if (q1 === "No" && q2 === "Yes") {
+      result = "Submit for Internal Review";
+    } else {
+      result = "The Educator is Not Eligible";
+    }
   } else {
     const expectations = expectedAnswers[answers.level];
     const allMatch = expectations?.every((expected, i) => userResponses[i] === expected);
@@ -186,10 +205,21 @@ function evaluateResult() {
       userResponses[1] === "Yes" &&
       userResponses[2] === "Yes" &&
       userResponses[3] === "Yes" &&
-      userResponses[4] === "Yes" &&
+      userResponses[4] === "No" &&
       userResponses[5] === "No"
     ) {
       result = "Submit for Internal Review";
+    } else if (
+      answers.level === "level1" &&
+      userResponses[0] === "Yes" &&
+      userResponses[1] === "Yes" &&
+      userResponses[2] === "Yes" &&
+      userResponses[3] === "Yes" &&
+      userResponses[4] === "Yes" &&
+      userResponses[5] === "No" &&
+      userResponses[6] === "No"
+    ) {
+      result = "The Educator is Eligible";
     } else if (
       answers.level === "level1" &&
       userResponses[0] === "No" &&
