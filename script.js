@@ -24,16 +24,11 @@ const entryQuestions = [
 const level1Questions = [
   "Has the educator been at Step 3 for at least 12 months, Step 2 for at least 2 years, or Step 1 for at least 3 years?",
   "Does the educator hold recognized qualifications (ECE Certificate/Diploma or Degree)?",
-  "Were their qualifications issued at least 3 years ago?",
-  "Has the educator accumulated at least 3 years of relevant work experience?",
-  "Is the educator at least 19 years old?",
-  "Is the Educator Conditionally Approved?",
-  "Was the educator approved in error for their current step?"
+  "When was the educator's qualification issued? (YYYY-MM-DD)"
 ];
 
 const expectedAnswers = {
   entry:  ["Yes", "Yes", "Yes", "Yes", "No", "No"],
-  level1: ["Yes", "Yes", "Yes", "Yes", "Yes", "No", "No"]
 };
 
 const schoolAgeQuestions = [
@@ -95,34 +90,58 @@ function renderNextQuestion() {
   const label = document.createElement("label");
   label.innerText = `${currentQuestionIndex + 1}. ${question}`;
 
-  const select = document.createElement("select");
-  select.setAttribute("data-qindex", currentQuestionIndex);
-  select.innerHTML = `
-    <option value="">-- Select --</option>
-    <option value="Yes">Yes</option>
-    <option value="No">No</option>
-  `;
-  select.onchange = () => {
-    const idx = parseInt(select.getAttribute("data-qindex"));
-    userResponses[idx] = select.value;
+  if (question.includes("When was the educator's qualification issued?")) {
+    const input = document.createElement("input");
+    input.type = "date";
+    input.setAttribute("data-qindex", currentQuestionIndex);
+    input.onchange = () => {
+      const selectedDate = new Date(input.value);
+      const today = new Date();
+      const timeDiff = today - selectedDate;
+      const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+      const years = Math.floor(days / 365);
+      const months = Math.floor((days % 365) / 30);
+      const dayCount = days % 30;
 
-    for (let i = idx + 1; i < questionFlow.length; i++) {
-      delete userResponses[i];
-      const q = document.getElementById(`q-${i}`);
-      if (q) q.remove();
+      const explanation = document.createElement("p");
+      explanation.innerText = `Issued: ${years} years, ${months} months, ${dayCount} days ago.\n` +
+        (years >= 3 ? "The qualification was issued more than 3 years ago." : "The qualification was issued less than 3 years ago.");
+      group.appendChild(explanation);
+
+      userResponses[currentQuestionIndex] = years >= 3 ? "Yes" : "No";
+      resultSection.style.display = "none";
+      currentQuestionIndex++;
+      renderNextQuestion();
+    };
+    group.appendChild(label);
+    group.appendChild(input);
+  } else {
+    const select = document.createElement("select");
+    select.setAttribute("data-qindex", currentQuestionIndex);
+    select.innerHTML = `
+      <option value="">-- Select --</option>
+      <option value="Yes">Yes</option>
+      <option value="No">No</option>
+    `;
+    select.onchange = () => {
+      const idx = parseInt(select.getAttribute("data-qindex"));
+      userResponses[idx] = select.value;
+      for (let i = idx + 1; i < questionFlow.length; i++) {
+        delete userResponses[i];
+        const q = document.getElementById(`q-${i}`);
+        if (q) q.remove();
+      }
+      resultSection.style.display = "none";
+      currentQuestionIndex = idx + 1;
+      renderNextQuestion();
+    };
+    if (userResponses[currentQuestionIndex]) {
+      select.value = userResponses[currentQuestionIndex];
     }
-
-    resultSection.style.display = "none";
-    currentQuestionIndex = idx + 1;
-    renderNextQuestion();
-  };
-
-  if (userResponses[currentQuestionIndex]) {
-    select.value = userResponses[currentQuestionIndex];
+    group.appendChild(label);
+    group.appendChild(select);
   }
 
-  group.appendChild(label);
-  group.appendChild(select);
   dynamicQuestionsDiv.appendChild(group);
 }
 
