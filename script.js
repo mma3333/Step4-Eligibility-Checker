@@ -93,7 +93,6 @@ function renderNextQuestion() {
 
   const label = document.createElement("label");
   label.innerText = `${currentQuestionIndex + 1}. ${question}`;
-
   group.appendChild(label);
 
   if (question.includes("When was the educator's qualification issued?")) {
@@ -128,20 +127,30 @@ function renderNextQuestion() {
     };
     group.appendChild(input);
   } else {
-    const yesBtn = document.createElement("button");
-    yesBtn.type = "button";
-    yesBtn.className = "btn btn-option";
-    yesBtn.textContent = "Yes";
-    yesBtn.onclick = () => handleAnswer("Yes");
+    const options = ["Yes", "No"];
+    options.forEach(option => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn btn-option";
+      btn.textContent = option;
+      btn.onclick = () => handleAnswer(option);
+      btn.style.margin = "5px";
+      btn.style.padding = "10px 20px";
+      btn.style.border = "1px solid #ccc";
+      btn.style.borderRadius = "5px";
+      btn.style.cursor = "pointer";
+      btn.style.backgroundColor = "#f8f8f8";
+      btn.style.fontWeight = "bold";
 
-    const noBtn = document.createElement("button");
-    noBtn.type = "button";
-    noBtn.className = "btn btn-option";
-    noBtn.textContent = "No";
-    noBtn.onclick = () => handleAnswer("No");
+      btn.addEventListener("click", function () {
+        const allButtons = group.querySelectorAll("button");
+        allButtons.forEach(b => b.style.backgroundColor = "#f8f8f8");
+        this.style.backgroundColor = "#156b72";
+        this.style.color = "#fff";
+      });
 
-    group.appendChild(yesBtn);
-    group.appendChild(noBtn);
+      group.appendChild(btn);
+    });
   }
 
   dynamicQuestionsDiv.appendChild(group);
