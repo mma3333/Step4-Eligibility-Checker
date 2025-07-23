@@ -11,6 +11,9 @@ let answers = {
 let questionFlow = [];
 let userResponses = {};
 
+document.getElementById("description-message").innerText =
+  "This tool is intended for internal use only. Please do not share it with anyone outside of EECD. It was created to help guide you in asking the right questions when operators request information about an educator’s eligibility for Step 4. Use it to support and streamline your workflow. Please note that this is only an estimator — final eligibility can only be determined after a complete application, along with all required documents, has been submitted and reviewed by EECD.";
+
 const entryQuestions = [
   "Has the educator been at Step 3 for at least 12 months, Step 2 for at least 2 years, or Step 1 for at least 3 years?",
   "Has the educator completed the Intro to ECE (90-hour online course)?",
@@ -45,6 +48,14 @@ const schoolAgeQuestionsLevel1 = [
   "Does the educator hold recognized qualifications (ECE Certificate/Diploma or Degree)?",
   "Is the educator at least 19 years old?"
 ];
+
+document.getElementById("level").addEventListener("change", () => {
+  handleChange(0);
+});
+
+document.getElementById("ageGroup").addEventListener("change", () => {
+  handleChange(1);
+});
 
 function handleChange(step) {
   const levelValue = document.getElementById("level").value;
@@ -170,30 +181,21 @@ function evaluateResult() {
   const allAnswered = questionFlow.every((_, i) => userResponses[i] !== undefined);
   if (!allAnswered) return;
 
-  let result = "The Educator is Not Eligible";
+  let result = "Based on the information provided, the educator might not be eligible for Step 4. Please submit the application for review.";
 
   if (answers.ageGroup === "school-age" && answers.level === "level1") {
-    const q1 = userResponses[0];
-    const q2 = userResponses[1];
-    const q3 = userResponses[2];
-
+    const [q1, q2, q3] = [userResponses[0], userResponses[1], userResponses[2]];
     if (q1 === "Yes" && q2 === "Yes" && q3 === "Yes") {
-      result = "The Educator is Eligible";
+      result = "Based on the information provided, the educator might be eligible for Step 4. Please submit the application for review.";
     } else if (q1 === "No" && q2 === "Yes" && q3 === "Yes") {
-      result = "Submit for Internal Review";
-    } else {
-      result = "The Educator is Not Eligible";
+      result = "Please submit the application with all required documents for review by EECD.";
     }
   } else if (answers.ageGroup === "school-age" && answers.level === "entry") {
-    const q1 = userResponses[0];
-    const q2 = userResponses[1];
-
+    const [q1, q2] = [userResponses[0], userResponses[1]];
     if (q1 === "Yes" && q2 === "Yes") {
-      result = "The Educator is Eligible";
+      result = "Based on the information provided, the educator might be eligible for Step 4. Please submit the application for review.";
     } else if (q1 === "No" && q2 === "Yes") {
-      result = "Submit for Internal Review";
-    } else {
-      result = "The Educator is Not Eligible";
+      result = "Please submit the application with all required documents for review by EECD.";
     }
   } else {
     const expectations = expectedAnswers[answers.level];
@@ -208,7 +210,7 @@ function evaluateResult() {
       userResponses[4] === "No" &&
       userResponses[5] === "No"
     ) {
-      result = "Submit for Internal Review";
+      result = "Please submit the application with all required documents for review by EECD.";
     } else if (
       answers.level === "level1" &&
       userResponses[0] === "Yes" &&
@@ -219,7 +221,7 @@ function evaluateResult() {
       userResponses[5] === "No" &&
       userResponses[6] === "No"
     ) {
-      result = "The Educator is Eligible";
+      result = "Based on the information provided, the educator might be eligible for Step 4. Please submit the application for review.";
     } else if (
       answers.level === "level1" &&
       userResponses[0] === "No" &&
@@ -230,11 +232,9 @@ function evaluateResult() {
       userResponses[5] === "No" &&
       userResponses[6] === "No"
     ) {
-      result = "Submit for Internal Review";
+      result = "Please submit the application with all required documents for review by EECD.";
     } else if (allMatch) {
-      result = "The Educator is Eligible";
-    } else {
-      result = "The Educator is Not Eligible";
+      result = "Based on the information provided, the educator might be eligible for Step 4. Please submit the application for review.";
     }
   }
 
