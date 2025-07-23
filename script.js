@@ -32,7 +32,7 @@ const level1Questions = [
 ];
 
 const expectedAnswers = {
-  entry:  ["Yes", "Yes", "Yes", "Yes", "No", "No"],
+  entry: ["Yes", "Yes", "Yes", "Yes", "No", "No"],
 };
 
 const schoolAgeQuestions = [
@@ -120,7 +120,9 @@ function renderNextQuestion() {
         (years >= 3 ? "The qualification was issued more than 3 years ago." : "The qualification was issued less than 3 years ago.");
       group.appendChild(explanation);
 
-      updateAnswers();
+      currentQuestionIndex += 1;
+      renderNextQuestion();
+      evaluateResult();
     };
     group.appendChild(input);
   } else {
@@ -148,7 +150,9 @@ function renderNextQuestion() {
         this.style.backgroundColor = "#156b72";
         this.style.color = "#fff";
         userResponses[currentQuestionIndex] = option;
-        updateAnswers();
+        currentQuestionIndex += 1;
+        renderNextQuestion();
+        evaluateResult();
       };
 
       group.appendChild(btn);
@@ -156,18 +160,6 @@ function renderNextQuestion() {
   }
 
   dynamicQuestionsDiv.appendChild(group);
-}
-
-function updateAnswers() {
-  const idx = currentQuestionIndex;
-  for (let i = idx + 1; i < questionFlow.length; i++) {
-    delete userResponses[i];
-    const q = document.getElementById(`q-${i}`);
-    if (q) q.remove();
-  }
-  currentQuestionIndex = Object.keys(userResponses).length;
-  renderNextQuestion();
-  evaluateResult();
 }
 
 function evaluateResult() {
