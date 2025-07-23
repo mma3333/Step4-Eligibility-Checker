@@ -32,10 +32,9 @@ const level1Questions = [
   "Was the educator approved in error for their current step?"
 ];
 
-// Must match question order exactly
 const expectedAnswers = {
   entry:  ["Yes", "Yes", "Yes", "Yes", "Yes", "No", "No"],
-  level1: ["No",  "Yes", "Yes", "Yes", "Yes", "No", "No"]
+  level1: ["Yes", "Yes", "Yes", "Yes", "Yes", "No", "No"]
 };
 
 const schoolAgeQuestions = [
@@ -134,7 +133,6 @@ function evaluateResult() {
     } else {
       result = "The Educator is Not Eligible";
     }
-
   } else {
     const expectations = expectedAnswers[answers.level];
     const firstAnswer = userResponses[0];
