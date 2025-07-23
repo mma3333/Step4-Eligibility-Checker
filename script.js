@@ -139,6 +139,7 @@ function renderNextQuestion() {
       btn.style.fontWeight = "bold";
 
       btn.onclick = function () {
+        if (userResponses[currentQuestionIndex] === option) return; // prevent re-trigger
         const allButtons = group.querySelectorAll("button");
         allButtons.forEach(b => {
           b.style.backgroundColor = "#f8f8f8";
