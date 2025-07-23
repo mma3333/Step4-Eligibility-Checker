@@ -39,6 +39,7 @@ const expectedAnswers = {
 
 const schoolAgeQuestions = [
   "Has the educator been at Step 3 for at least 12 months, Step 2 for at least 2 years, or Step 1 for at least 3 years?",
+  "Does the educator hold recognized qualifications (ECE Certificate/Diploma or Degree)?",
   "Is the educator at least 19 years old?"
 ];
 
@@ -71,9 +72,11 @@ function handleChange(step) {
     dynamicQuestionsDiv.innerHTML = "";
     resultSection.style.display = "none";
 
-    questionFlow = (answers.ageGroup === "school-age")
-      ? schoolAgeQuestions
-      : (answers.level === "entry" ? entryQuestions : level1Questions);
+    if (answers.ageGroup === "school-age" && answers.level === "level1") {
+      questionFlow = schoolAgeQuestions;
+    } else {
+      questionFlow = answers.level === "entry" ? entryQuestions : level1Questions;
+    }
 
     renderNextQuestion();
   }
@@ -130,13 +133,14 @@ function evaluateResult() {
 
   let result = "The Educator is Not Eligible";
 
-  if (answers.ageGroup === "school-age") {
-    const q1 = userResponses[0];
-    const q2 = userResponses[1];
+  if (answers.ageGroup === "school-age" && answers.level === "level1") {
+    const q1 = userResponses[0]; // Step experience
+    const q2 = userResponses[1]; // Has qualification
+    const q3 = userResponses[2]; // Age
 
-    if (q1 === "Yes" && q2 === "Yes") {
+    if (q1 === "Yes" && q2 === "Yes" && q3 === "Yes") {
       result = "The Educator is Eligible";
-    } else if (q1 === "No" && q2 === "Yes") {
+    } else if (q1 === "No" && q2 === "Yes" && q3 === "Yes") {
       result = "Submit for Internal Review";
     } else {
       result = "The Educator is Not Eligible";
