@@ -24,7 +24,7 @@ const entryQuestions = [
 const level1Questions = [
   "Has the educator been at Step 3 for at least 12 months, Step 2 for at least 2 years, or Step 1 for at least 3 years?",
   "Does the educator hold recognized qualifications (ECE Certificate/Diploma or Degree)?",
-  "When was the educator's qualification issued? (YYYY-MM-DD)",
+  "When was the educator's qualification issued?",
   "Has the educator accumulated at least 3 years of relevant work experience?",
   "Is the educator at least 19 years old?",
   "Is the Educator Conditionally Approved?",
@@ -94,6 +94,8 @@ function renderNextQuestion() {
   const label = document.createElement("label");
   label.innerText = `${currentQuestionIndex + 1}. ${question}`;
 
+  group.appendChild(label);
+
   if (question.includes("When was the educator's qualification issued?")) {
     const input = document.createElement("input");
     input.type = "date";
@@ -124,36 +126,38 @@ function renderNextQuestion() {
         }
       }, 200);
     };
-    group.appendChild(label);
     group.appendChild(input);
   } else {
-    const select = document.createElement("select");
-    select.setAttribute("data-qindex", currentQuestionIndex);
-    select.innerHTML = `
-      <option value="">-- Select --</option>
-      <option value="Yes">Yes</option>
-      <option value="No">No</option>
-    `;
-    select.onchange = () => {
-      const idx = parseInt(select.getAttribute("data-qindex"));
-      userResponses[idx] = select.value;
-      for (let i = idx + 1; i < questionFlow.length; i++) {
-        delete userResponses[i];
-        const q = document.getElementById(`q-${i}`);
-        if (q) q.remove();
-      }
-      resultSection.style.display = "none";
-      currentQuestionIndex = idx + 1;
-      renderNextQuestion();
-    };
-    if (userResponses[currentQuestionIndex]) {
-      select.value = userResponses[currentQuestionIndex];
-    }
-    group.appendChild(label);
-    group.appendChild(select);
+    const yesBtn = document.createElement("button");
+    yesBtn.type = "button";
+    yesBtn.className = "btn btn-option";
+    yesBtn.textContent = "Yes";
+    yesBtn.onclick = () => handleAnswer("Yes");
+
+    const noBtn = document.createElement("button");
+    noBtn.type = "button";
+    noBtn.className = "btn btn-option";
+    noBtn.textContent = "No";
+    noBtn.onclick = () => handleAnswer("No");
+
+    group.appendChild(yesBtn);
+    group.appendChild(noBtn);
   }
 
   dynamicQuestionsDiv.appendChild(group);
+}
+
+function handleAnswer(answer) {
+  const idx = currentQuestionIndex;
+  userResponses[idx] = answer;
+  for (let i = idx + 1; i < questionFlow.length; i++) {
+    delete userResponses[i];
+    const q = document.getElementById(`q-${i}`);
+    if (q) q.remove();
+  }
+  resultSection.style.display = "none";
+  currentQuestionIndex = idx + 1;
+  renderNextQuestion();
 }
 
 function evaluateResult() {
