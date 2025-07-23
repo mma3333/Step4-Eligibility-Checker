@@ -10,7 +10,6 @@ let answers = {
 
 let questionFlow = [];
 let userResponses = {};
-let currentQuestionIndex = 0;
 
 const entryQuestions = [
   "Has the educator been at Step 3 for at least 12 months, Step 2 for at least 2 years, or Step 1 for at least 3 years?",
@@ -50,7 +49,6 @@ function handleChange(step) {
     answers.ageGroup = null;
     userResponses = {};
     questionFlow = [];
-    currentQuestionIndex = 0;
 
     if (ageGroupSelect) {
       ageGroupSelect.value = "";
@@ -66,7 +64,6 @@ function handleChange(step) {
     answers.ageGroup = ageGroupSelect?.value;
     userResponses = {};
     questionFlow = [];
-    currentQuestionIndex = 0;
     dynamicQuestionsDiv.innerHTML = "";
     resultSection.style.display = "none";
 
@@ -76,90 +73,89 @@ function handleChange(step) {
       questionFlow = answers.level === "entry" ? entryQuestions : level1Questions;
     }
 
-    renderNextQuestion();
+    renderAllQuestions();
   }
 }
 
-function renderNextQuestion() {
-  if (currentQuestionIndex >= questionFlow.length) {
-    evaluateResult();
-    return;
-  }
+function renderAllQuestions() {
+  dynamicQuestionsDiv.innerHTML = "";
+  questionFlow.forEach((question, index) => {
+    const group = document.createElement("div");
+    group.className = "form-group";
+    group.id = `q-${index}`;
 
-  const question = questionFlow[currentQuestionIndex];
-  const group = document.createElement("div");
-  group.className = "form-group";
-  group.id = `q-${currentQuestionIndex}`;
+    const label = document.createElement("label");
+    label.innerText = `${index + 1}. ${question}`;
+    group.appendChild(label);
 
-  const label = document.createElement("label");
-  label.innerText = `${currentQuestionIndex + 1}. ${question}`;
-  group.appendChild(label);
+    if (question.includes("When was the educator's qualification issued")) {
+      const input = document.createElement("input");
+      input.type = "date";
+      input.value = "";
+      input.setAttribute("data-qindex", index);
+      input.onchange = () => {
+        const selectedDate = new Date(input.value);
+        const today = new Date();
+        const timeDiff = today - selectedDate;
+        const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+        const years = Math.floor(days / 365);
+        const months = Math.floor((days % 365) / 30);
+        const dayCount = days % 30;
 
-  if (question.includes("When was the educator's qualification issued")) {
-    const input = document.createElement("input");
-    input.type = "date";
-    input.setAttribute("data-qindex", currentQuestionIndex);
-    input.onchange = () => {
-      const selectedDate = new Date(input.value);
-      const today = new Date();
-      const timeDiff = today - selectedDate;
-      const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-      const years = Math.floor(days / 365);
-      const months = Math.floor((days % 365) / 30);
-      const dayCount = days % 30;
+        userResponses[index] = years >= 3 ? "Yes" : "No";
+        resultSection.style.display = "none";
 
-      userResponses[currentQuestionIndex] = years >= 3 ? "Yes" : "No";
-      resultSection.style.display = "none";
+        const oldExplanation = group.querySelector(".explanation");
+        if (oldExplanation) oldExplanation.remove();
 
-      const oldExplanation = group.querySelector(".explanation");
-      if (oldExplanation) oldExplanation.remove();
+        const explanation = document.createElement("p");
+        explanation.className = "explanation";
+        explanation.innerText = `Issued: ${years} years, ${months} months, ${dayCount} days ago.\n` +
+          (years >= 3 ? "The qualification was issued more than 3 years ago." : "The qualification was issued less than 3 years ago.");
+        group.appendChild(explanation);
 
-      const explanation = document.createElement("p");
-      explanation.className = "explanation";
-      explanation.innerText = `Issued: ${years} years, ${months} months, ${dayCount} days ago.\n` +
-        (years >= 3 ? "The qualification was issued more than 3 years ago." : "The qualification was issued less than 3 years ago.");
-      group.appendChild(explanation);
-
-      currentQuestionIndex += 1;
-      renderNextQuestion();
-      evaluateResult();
-    };
-    group.appendChild(input);
-  } else {
-    const options = ["Yes", "No"];
-    options.forEach(option => {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "btn btn-option";
-      btn.textContent = option;
-      btn.style.margin = "5px";
-      btn.style.padding = "10px 20px";
-      btn.style.border = "1px solid #ccc";
-      btn.style.borderRadius = "5px";
-      btn.style.cursor = "pointer";
-      btn.style.backgroundColor = "#f8f8f8";
-      btn.style.fontWeight = "bold";
-
-      btn.onclick = function () {
-        if (userResponses[currentQuestionIndex] === option) return; // prevent re-trigger
-        const allButtons = group.querySelectorAll("button");
-        allButtons.forEach(b => {
-          b.style.backgroundColor = "#f8f8f8";
-          b.style.color = "#000";
-        });
-        this.style.backgroundColor = "#156b72";
-        this.style.color = "#fff";
-        userResponses[currentQuestionIndex] = option;
-        currentQuestionIndex += 1;
-        renderNextQuestion();
         evaluateResult();
       };
+      group.appendChild(input);
+    } else {
+      const options = ["Yes", "No"];
+      options.forEach(option => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "btn btn-option";
+        btn.textContent = option;
+        btn.style.margin = "5px";
+        btn.style.padding = "10px 20px";
+        btn.style.border = "1px solid #ccc";
+        btn.style.borderRadius = "5px";
+        btn.style.cursor = "pointer";
+        btn.style.backgroundColor = "#f8f8f8";
+        btn.style.fontWeight = "bold";
 
-      group.appendChild(btn);
-    });
-  }
+        btn.onclick = function () {
+          const previouslySelected = userResponses[index];
+          if (previouslySelected === option) return;
 
-  dynamicQuestionsDiv.appendChild(group);
+          const allButtons = group.querySelectorAll("button");
+          allButtons.forEach(b => {
+            b.style.backgroundColor = "#f8f8f8";
+            b.style.color = "#000";
+          });
+
+          this.style.backgroundColor = "#156b72";
+          this.style.color = "#fff";
+          userResponses[index] = option;
+
+          resultSection.style.display = "none";
+          evaluateResult();
+        };
+
+        group.appendChild(btn);
+      });
+    }
+
+    dynamicQuestionsDiv.appendChild(group);
+  });
 }
 
 function evaluateResult() {
